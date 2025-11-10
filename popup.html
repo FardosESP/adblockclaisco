@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdBlock Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-tertiary: #f1f3f5;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --accent: #3b82f6;
+      --accent-light: #dbeafe;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --border: #e5e7eb;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #242424;
+      --bg-tertiary: #2a2a2a;
+      --text-primary: #f1f3f5;
+      --text-secondary: #9ca3af;
+      --text-tertiary: #6b7280;
+      --border: #3a3a3a;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      width: 380px;
+      min-height: 560px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      min-height: 560px;
+    }
+
+    .header {
+      background: var(--bg-primary);
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    .brand-text .version {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--border);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: var(--radius-full);
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: var(--shadow-sm);
+    }
+
+    input:checked + .toggle-slider {
+      background: var(--accent);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    input:focus + .toggle-slider {
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 14px 10px;
+      text-align: center;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .stat-card:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--border);
+      transform: translateY(-1px);
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: fit-content;
+      padding: 12px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text-secondary);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .tab-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .tab-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: var(--radius-full);
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: var(--radius-full);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .stat-row:first-child {
+      padding-top: 0;
+    }
+
+    .stat-row-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .stat-row-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .btn {
+      padding: 10px 18px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-md);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-group .btn {
+      flex: 1;
+    }
+
+    .feature-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .feature-toggle:hover {
+      background: var(--bg-secondary);
+      border-color: var(--accent-light);
+    }
+
+    .feature-info h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .feature-info p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .chart-container {
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .chart-title {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 100px;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .chart-bar-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chart-bar {
+      width: 100%;
+      background: linear-gradient(to top, var(--accent), var(--accent-light));
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      min-height: 4px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .chart-bar:hover {
+      background: linear-gradient(to top, var(--accent-hover), var(--accent));
+      transform: scaleY(1.05);
+    }
+
+    .chart-bar-value {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .chart-bar-label {
+      font-size: 9px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .list-item {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .list-item:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-light);
+    }
+
+    .list-item-text {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text-primary);
+      word-break: break-word;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--accent-light);
+      border-radius: var(--radius-full);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .badge-success {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .badge-warning {
+      background: var(--warning-light);
+      color: var(--warning);
+    }
+
+    .badge-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-tertiary);
+    }
+
+    .empty-state-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .empty-state-text {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 14px 20px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-message {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: var(--success-light);
+      border: 1px solid var(--success);
+      border-radius: var(--radius-md);
+      font-size: 11px;
+      color: var(--success);
+      font-weight: 600;
+      text-align: center;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    .status-message.show {
+      display: block;
+    }
+
+    .status-message.error {
+      background: var(--danger-light);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="brand">
+          <div class="brand-icon">🛡️</div>
+          <div class="brand-text">
+            <h1>AdBlock Pro</h1>
+            <div class="version">v5.0 • Minimalista</div>
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleProtection" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="quickAds">0</div>
+          <div class="stat-label">Anuncios</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="quickTrackers">0</div>
+          <div class="stat-label">Rastreo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="quickMalware">0</div>
+          <div class="stat-label">Malware</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="quickSites">0</div>
+          <div class="stat-label">Sitios</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="overview">Resumen</button>
+      <button class="tab-btn" data-tab="stats">Estadísticas</button>
+      <button class="tab-btn" data-tab="lists">Listas</button>
+      <button class="tab-btn" data-tab="privacy">Privacidad</button>
+      <button class="tab-btn" data-tab="settings">Ajustes</button>
+    </div>
+
+    <div id="overview" class="tab-content active">
+      <div class="section">
+        <div class="section-title">Resumen de Hoy</div>
+        <div class="stat-row">
+          <span class="stat-row-label">Total Bloqueados</span>
+          <span class="stat-row-value" id="totalBlocked">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Anuncios</span>
+          <span class="stat-row-value" id="adsBlocked">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Rastreadores</span>
+          <span class="stat-row-value" id="trackersBlocked">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Mineros Crypto</span>
+          <span class="stat-row-value" id="minersBlocked">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Fingerprinting</span>
+          <span class="stat-row-value" id="fingerprintBlocked">0</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Protección Avanzada</div>
+        <div class="stat-row">
+          <span class="stat-row-label">Detecciones IA</span>
+          <span class="stat-row-value" id="mlDetectionsBlocked">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Popups Bloqueados</span>
+          <span class="stat-row-value" id="popupsBlocked">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Clickjacking</span>
+          <span class="stat-row-value" id="clickjackingBlocked">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Ads en Videos</span>
+          <span class="stat-row-value" id="videoAdsBlocked">0</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Sitio Actual</div>
+        <div class="stat-row">
+          <span class="stat-row-label">Dominio</span>
+          <span class="stat-row-value" id="currentDomain" style="font-size: 11px;">-</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Bloqueados aquí</span>
+          <span class="stat-row-value" id="currentSiteBlocked">0</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" id="addWhitelistBtn">Permitir Sitio</button>
+          <button class="btn" id="elementPickerBtn">Selector</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="stats" class="tab-content">
+      <div class="section">
+        <div class="section-title">Últimos 7 Días</div>
+        <div class="chart-container">
+          <div class="chart-title">Anuncios Bloqueados por Día</div>
+          <div class="chart-bars" id="chartBars"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Top Sitios Bloqueados</div>
+        <div id="topSitesList"></div>
+      </div>
+    </div>
+
+    <div id="lists" class="tab-content">
+      <div class="section">
+        <div class="section-title">Listas de Filtros Activas</div>
+        <div id="filterListsContainer"></div>
+        <div id="updateStatus" class="status-message"></div>
+        <div class="btn-group">
+          <button class="btn" id="updateListsBtn">Actualizar Listas</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="privacy" class="tab-content">
+      <div class="section">
+        <div class="section-title">Módulos de Protección</div>
+        
+        <div class="feature-toggle">
+          <div class="feature-info">
+            <h3>🦠 Anti-Malware</h3>
+            <p>Detecta y bloquea scripts maliciosos</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleAntiMalware" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="feature-toggle">
+          <div class="feature-info">
+            <h3>⛏️ Anti-Minería</h3>
+            <p>Bloquea minería de criptomonedas</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleAntiMiner" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="feature-toggle">
+          <div class="feature-info">
+            <h3>👁️ Anti-Tracking</h3>
+            <p>Bloquea rastreadores y analytics</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleAntiTracking" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="feature-toggle">
+          <div class="feature-info">
+            <h3>🎬 YouTube Ads</h3>
+            <p>Bloqueo de anuncios en YouTube</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleYouTube">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="feature-toggle">
+          <div class="feature-info">
+            <h3>🎮 Twitch Ads</h3>
+            <p>Bloqueo de anuncios en Twitch</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleTwitch">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Anti-Fingerprinting</div>
+        <div id="privacyToggles"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Whitelist</div>
+        <div id="whitelistContainer"></div>
+      </div>
+    </div>
+
+    <div id="settings" class="tab-content">
+      <div class="section">
+        <div class="section-title">Configuración</div>
+        
+        <div class="feature-toggle">
+          <div class="feature-info">
+            <h3>Detección IA</h3>
+            <p>Usar inteligencia artificial para detectar anuncios</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleML" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="feature-toggle">
+          <div class="feature-info">
+            <h3>Notificaciones</h3>
+            <p>Mostrar alertas cuando se bloquea malware</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleNotifications" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Datos</div>
+        <div class="btn-group">
+          <button class="btn" id="exportBtn">Exportar</button>
+          <button class="btn btn-secondary" id="importBtn">Importar</button>
+          <button class="btn btn-danger" id="resetBtn">Reiniciar</button>
+        </div>
+        <input type="file" id="importFile" accept=".json">
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>AdBlock Pro v5.0 • Diseño Minimalista</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "AdBlock Pro - Protección Total",
+  "version": "5.0.0",
+  "description": "Bloqueador avanzado con ML, CNAME cloaking detection, URL tracking removal, auto cookie banner dismiss, anti-adblock evasion, 270+ reglas, anti-fingerprinting, malware/crypto protection",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "scripting",
+    "webNavigation",
+    "notifications",
+    "alarms",
+    "cookies",
+    "webRequest"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AdBlock Pro - Protección Total",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "url-cleaner.js", 
+        "cookie-banner-blocker.js",
+        "anti-adblock-evasion.js",
+        "social-widget-blocker.js",
+        "amp-unwrapper.js",
+        "ml-detector.js",
+        "video-stream-detector.js",
+        "anti-popup.js",
+        "content-script.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injected-script.js",
+        "ml-detector.js",
+        "anti-fingerprint.js",
+        "video-stream-detector.js",
+        "url-cleaner.js",
+        "cookie-banner-blocker.js",
+        "anti-adblock-evasion.js",
+        "social-widget-blocker.js",
+        "amp-unwrapper.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_main",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  }
+}
