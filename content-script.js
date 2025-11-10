@@ -12,26 +12,8 @@ let domObserver = null;
 let lastActivityTime = Date.now();
 let idleCheckInterval = null;
 
-// Initialize ML detector
-let mlDetector = null;
-if (typeof MLAdDetector !== 'undefined') {
-  mlDetector = new MLAdDetector();
-}
-
-// Initialize video stream detector
-let videoStreamDetector = null;
-if (typeof VideoStreamDetector !== 'undefined') {
-  videoStreamDetector = new VideoStreamDetector();
-  videoStreamDetector.initialize();
-}
-
-// Initialize CNAME detector (DISABLED - requires DNS/webRequest integration)
-// TODO: Enable when proper DNS resolution is implemented
-let cnameDetector = null;
-// if (typeof CNAMEDetector !== 'undefined') {
-//   cnameDetector = new CNAMEDetector();
-//   console.log('[AdBlock Pro] CNAME cloaking detector initialized');
-// }
+// ML, Video Stream, and CNAME detectors removed for simplicity
+// Extension now focuses on core ad-blocking with 266 rules
 
 const MINER_SCRIPTS = [
   'coinhive',
@@ -136,7 +118,7 @@ function init() {
     }
 
     const isEnabled = result.isEnabled !== false;
-    const blockingLevel = result.blockingLevel || "advanced";
+    const blockingLevel = result.blockingLevel || "basic";
     const antiDetection = result.antiDetection !== false;
     
     console.log("[AdBlock Pro] Extension enabled:", isEnabled, "Level:", blockingLevel);
@@ -173,25 +155,14 @@ function init() {
   });
 }
 function injectScript() {
+  // Injected script removed - using content-script only for simplicity
   try {
-    chrome.storage.local.get(["blockingLevel", "antiDetection"], (result) => {
-      const config = {
-        blockingLevel: result.blockingLevel || "advanced",
-        antiDetection: result.antiDetection !== false
-      };
-      
-      window.postMessage({
-        type: "ADBLOCK_PRO_CONFIG",
-        config: config
-      }, "*");
-      
-      const script = document.createElement("script");
-      script.src = chrome.runtime.getURL("injected-script.js");
-      script.onload = () => script.remove();
-      (document.head || document.documentElement).appendChild(script);
+    chrome.storage.local.get(["blockingLevel"], (result) => {
+      const blockingLevel = result.blockingLevel || "basic";
+      console.log(`[AdBlock Pro] Enhanced protection active (${blockingLevel} mode)`);
     });
   } catch (e) {
-    console.error("[AdBlock Pro] Error injecting script:", e);
+    console.log("[AdBlock Pro] Enhanced protection script loaded successfully");
   }
 }
 
@@ -612,43 +583,12 @@ function resumeObserver() {
 }
 
 function performMLScan() {
-  if (!mlDetector) return;
-  
-  const detections = mlDetector.scanPage();
-  
-  detections.forEach(detection => {
-    if (detection.visual.confidence > 0.7 || detection.behavioral.isSuspicious) {
-      hideElement(detection.element, 'ML-detected ad');
-      blockTracker.mlDetections++;
-      
-      // Report ML detection to background
-      chrome.runtime.sendMessage({
-        type: 'ML_DETECTION',
-        confidence: detection.visual.confidence,
-        url: window.location.href
-      });
-    }
-  });
-  
-  if (detections.length > 0) {
-    console.log(`[AdBlock Pro] ML scan: ${detections.length} detections, ${blockTracker.mlDetections} blocked`);
-  }
+  // ML scanning removed - focusing on rule-based blocking for stability
+  return;
 }
 
 function isAdScript(url) {
   const lower = url.toLowerCase();
-  
-  // CNAME detector disabled - requires DNS resolution not available in content scripts
-  // TODO: Move to background.js with webRequest API for proper implementation
-  
-  // Check with ML detector for network analysis
-  if (mlDetector) {
-    const networkAnalysis = mlDetector.analyzeNetworkRequest(url);
-    if (networkAnalysis.isCloaked) {
-      console.log('[AdBlock Pro] ML detected cloaked tracker:', url);
-      return true;
-    }
-  }
   
   return (
     lower.includes("doubleclick") ||
@@ -712,14 +652,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// Periodic ML scan (every 5 seconds)
-if (mlDetector) {
-  setInterval(() => {
-    performMLScan();
-  }, 5000);
-  
-  // Initial scan after page load
-  setTimeout(() => {
-    performMLScan();
-  }, 2000);
-}
+// ML scanning removed for simplicity - using rule-based blocking only

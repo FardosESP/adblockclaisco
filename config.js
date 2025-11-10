@@ -5,13 +5,13 @@ const BLOCKING_LEVELS = {
 };
 
 const DEFAULT_CONFIG = {
-  blockingLevel: BLOCKING_LEVELS.ADVANCED,
-  antiDetection: true,
+  blockingLevel: BLOCKING_LEVELS.BASIC,
+  antiDetection: false,
   blockYouTube: false,
   blockTwitch: false,
-  blockTrackers: true,
-  blockMiners: true,
-  blockCookieBanners: true,
+  blockTrackers: false,
+  blockMiners: false,
+  blockCookieBanners: false,
   enableLogging: false
 };
 

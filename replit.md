@@ -1,100 +1,175 @@
-# AdBlock Pro Browser Extension
+# AdBlock Pro - Extensión de Navegador
 
-## Overview
+## Descripción
+AdBlock Pro es una extensión avanzada de navegador para bloqueo de anuncios y protección de privacidad con interfaz minimalista en tema oscuro.
 
-AdBlock Pro is a comprehensive browser extension (Manifest V3) that provides multi-layer ad blocking, privacy protection, and anti-tracking capabilities. The extension implements 270+ blocking rules using the declarativeNetRequest API, along with advanced machine learning-based ad detection, fingerprint protection, and specialized blocking for platforms like YouTube and Twitch.
+## Características Principales
 
-The extension operates entirely client-side as a browser extension with no backend server requirements. It uses Chrome's service worker architecture for background processing and content scripts for page-level blocking and protection.
+### 🛡️ Protección Completa
+- **266 reglas de bloqueo activas** organizadas por categorías
+- Bloqueo de anuncios (Google Ads, Amazon, etc.)
+- Bloqueo de rastreadores y analytics
+- Bloqueo de widgets de redes sociales
+- Protección contra malware y minería de criptomonedas
 
-## User Preferences
+### 🎨 Interfaz Usuario
+- **Tema oscuro por defecto** para mejor experiencia visual
+- Diseño minimalista y moderno
+- 5 pestañas organizadas: Resumen, Estadísticas, Listas, Privacidad, Ajustes
+- Buscador en tiempo real de reglas
+- Estadísticas visuales con gráficos
 
-Preferred communication style: Simple, everyday language.
+### ⚙️ Configuración por Defecto
+- Solo el adblock básico está activado por defecto
+- Todas las características avanzadas desactivadas (usuario decide qué activar)
+- Nivel de bloqueo: BASIC
+- Configuración minimalista para mejor rendimiento
 
-## System Architecture
+## Estructura del Proyecto
 
-### Extension Architecture (Manifest V3)
-- **Service Worker Background Script** (`background.js`): Handles declarative network request rules, manages per-tab statistics, maintains whitelist/blacklist, and coordinates between content scripts
-- **Content Scripts**: Injected into all web pages to perform DOM-based ad blocking, ML detection, and privacy protection
-- **Popup UI** (`popup.html`, `popup.js`): User interface for viewing statistics, managing settings, and controlling protection levels
-- **Injected Scripts**: Deep page-level protection that runs in the page context to block tracking APIs and crypto miners
+### Archivos Principales
+- `popup.html` - Interfaz del popup de la extensión (tema oscuro)
+- `popup.js` - Lógica de la interfaz (con modo demo)
+- `background.js` - Servicio en segundo plano
+- `config.js` - Configuración por defecto
+- `rules.json` - 266 reglas de bloqueo categorizadas
+- `manifest.json` - Configuración de la extensión
 
-### Multi-Layer Blocking Strategy
-1. **Network-Level Blocking**: 270+ declarative rules (`rules.json`) that block ad/tracker domains at the network layer using Chrome's declarativeNetRequest API
-2. **DOM-Level Blocking**: Content scripts remove ad elements from the page after load using CSS selectors and heuristics
-3. **ML-Based Detection** (`ml-detector.js`): Machine learning heuristics analyze visual features, text patterns (NLP), and behavioral signals to identify disguised ads
-4. **Specialized Platform Blocking**: YouTube and Twitch have dedicated detection modules for platform-specific ad formats
+### Scripts de Protección
+- `anti-fingerprint.js` - Anti-fingerprinting
+- `anti-popup.js` - Bloqueador de popups
+- `anti-adblock-evasion.js` - Anti-detección de adblock
+- `cookie-banner-blocker.js` - Bloqueador de banners de cookies
+- `social-widget-blocker.js` - Bloqueador de widgets sociales
+- `url-cleaner.js` - Limpiador de parámetros de rastreo
+- `cosmetic-filters.js` - Filtros cosméticos
+- `ml-detector.js` - Detector de anuncios con IA
 
-### Privacy Protection Modules ⭐ ENHANCED
-- **Anti-Fingerprinting** (`anti-fingerprint.js`): Adds noise to canvas/WebGL/audio fingerprinting APIs to prevent tracking
-- **URL Tracking Removal** (`url-cleaner.js`): Strips 60+ tracking parameters (utm_*, fbclid, gclid, etc.) from URLs using History API without page reload. Sends URL_PARAMS_CLEANED messages to background for per-tab statistics.
-- **Cookie Banner Dismissal** (`cookie-banner-blocker.js`): Auto-dismisses 40+ common cookie consent banners. Sends COOKIE_BANNERS_BLOCKED messages with debounced reporting.
-- **Anti-Adblock Evasion** (`anti-adblock-evasion.js`): Prevents websites from detecting the ad blocker by spoofing window properties and simulating bait elements.
-- **Social Widget Blocking** (`social-widget-blocker.js`): Removes embedded social media widgets (Facebook, Twitter, LinkedIn) and tracking pixels. Sends SOCIAL_WIDGETS_BLOCKED messages with batched reporting.
-- **AMP Unwrapper** (`amp-unwrapper.js`): Automatically redirects Google AMP pages to their canonical URLs. Top-frame only execution prevents iframe conflicts.
+## Características Recientes
 
-### Per-Tab Statistics System ⭐ ENHANCED
-- Each browser tab maintains isolated statistics (ads blocked, trackers blocked, etc.)
-- Statistics stored in `Map<tabId, stats>` with automatic cleanup on tab close and navigation
-- Real-time badge counter updates show blocks per tab using `getOrCreateTabStats()` helper
-- Memory-bounded with max 50 domains tracked per tab
-- **Enhanced Integration**: All privacy modules (URL cleaner, cookie banner blocker, social widget blocker) update both global stats and per-tab stats
-- **Consistent Initialization**: `getOrCreateTabStats(tabId)` helper ensures uniform structure across all code paths
-- Badge displays per-tab counter when enabled, "OFF" when disabled, automatically syncs across tabs
+### ✅ Correcciones Implementadas
+- [x] Tema oscuro aplicado por defecto
+- [x] Todos los toggles desactivados excepto el principal
+- [x] Visualización completa de las 266 reglas (no solo 10)
+- [x] Buscador de reglas con filtrado en tiempo real
+- [x] Categorización de reglas (Anuncios, Rastreadores, Social, Otros)
+- [x] Manejo de errores robusto (funciona en modo demo)
+- [x] Estadísticas con datos mock en modo demo
+- [x] Contadores mejorados con categorización visual
+- [x] Configuración coherente en todos los archivos
 
-### Configuration System
-Three blocking levels defined in `config.js`:
-- **Basic**: Network rules only, minimal DOM intervention
-- **Advanced**: Includes YouTube/Twitch blocking, anti-detection, ML features
-- **Aggressive**: Maximum blocking with cosmetic filtering and mutation observers
+### 🎯 Estadísticas de Reglas
+- 🎯 Anuncios: Reglas específicas de publicidad
+- 👁️ Rastreadores: Analytics y tracking
+- 📱 Social Media: Facebook, Twitter, Instagram, LinkedIn
+- 🛡️ Otros: Reglas adicionales de protección
 
-Settings persist using Chrome Storage API with whitelist support for user-excluded domains.
+## Modo de Uso
 
-### Video Stream Ad Detection
-- **HLS/DASH Stream Analysis** (`video-stream-detector.js`): Monitors video elements for suspicious bitrate changes, quality switches, and playback manipulation
-- Detects ads embedded directly in video streams by analyzing playback rate resets and volume changes
-- Platform-specific detection for YouTube's adPlacements API and Twitch's GQL payload ads
+### Como Extensión de Chrome
+1. Abrir Chrome y navegar a `chrome://extensions/`
+2. Activar "Modo de desarrollador"
+3. Hacer clic en "Cargar extensión sin empaquetar"
+4. Seleccionar la carpeta del proyecto
+5. La extensión aparecerá en la barra de herramientas
 
-## External Dependencies
+### Modo Demo (Servidor Web)
+```bash
+python server.py
+```
+Abrir navegador en `http://localhost:5000/popup.html`
 
-### Browser APIs (Chrome Extension APIs)
-- **declarativeNetRequest**: Manifest V3 network blocking (primary ad blocking mechanism)
-- **storage**: Settings and statistics persistence
-- **tabs**: Per-tab tracking and badge updates
-- **scripting**: Dynamic content script injection
-- **webNavigation**: Page load event tracking
-- **notifications**: User alerts for malware/miner detection
-- **alarms**: Periodic tasks (cache cleanup, list updates)
-- **cookies**: Cookie banner detection support
-- **webRequest**: Headers inspection (limited in MV3)
+## Configuración Técnica
 
-### Third-Party Filter Lists (References Only)
-- **EasyList/EasyPrivacy Compatible**: Uses compatible filter syntax but rules are hardcoded in `rules.json`
-- **AdGuard CNAME Blocklist**: CNAME cloaking detection module (`cname-detector.js`) includes subset of known cloaked domains
-- **Note**: No external API calls - all filter lists are embedded in the extension
+### Configuración Por Defecto
+```javascript
+{
+  blockLevel: 'basic',
+  enableML: false,
+  antiFingerprint: false,
+  showNotifications: false,
+  autoWhitelist: true,
+  sponsorBlock: false
+}
+```
 
-### Runtime Dependencies
-- No external npm packages required for extension runtime
-- Development dependencies in `package.json` are for a separate Next.js demo site (not part of extension)
-- Extension is pure JavaScript with no build step required
+### Listas de Filtros Disponibles
+1. **EasyList** ✓ (Activada por defecto)
+2. EasyPrivacy
+3. Anti-Adblock Killer
+4. Fanboy Annoyances
+5. Fanboy Social
+6. Malware Domains
+7. URLhaus
+8. AdGuard Base
 
-## Recent Changes (November 2025)
+## Funcionalidades de Búsqueda
 
-### Features Added
-1. **Enhanced Per-Tab Statistics** with `getOrCreateTabStats()` helper for consistency
-2. **30 New Filter Rules** (IDs 241-270): fingerprinting (FingerprintJS, ClientJS), session recording (Heap, Smartlook), RTB (Criteo, Quantcast), crypto miners (Coinhive patterns)
-3. **5 New Privacy Modules** fully integrated with background message handlers:
-   - URL Tracking Parameter Removal (60+ params)
-   - Cookie Banner Auto-Dismissal (40+ selectors)
-   - Anti-Adblock Evasion
-   - Social Widget Blocker
-   - AMP Unwrapper (with iframe protection)
-4. **Message Handler System**: URL_PARAMS_CLEANED, COOKIE_BANNERS_BLOCKED, SOCIAL_WIDGETS_BLOCKED update both global and per-tab stats
+El buscador de reglas permite:
+- Búsqueda por URL/dominio
+- Búsqueda por ID de regla
+- Filtrado en tiempo real
+- Contador de resultados
+- Categorización visual de resultados
 
-### Bugs Fixed
-1. Badge counter now updates correctly using per-tab statistics
-2. Cross-tab sync working properly with storage.onChanged listener
-3. AMP unwrapper only runs in top-level frame (prevents iframe conflicts)
-4. Removed overly aggressive Google Tag Manager/Analytics filters
+## Estadísticas
 
-### Experimental/Disabled Features
-- **CNAME Cloaking Detection** (`experimental/cname-detector.js`): Disabled due to lack of DNS resolution API in Manifest V3. Requires future Chrome API support or background.js webRequest integration for proper first-party tracker alias detection.
+### Datos Rastreados
+- Total de elementos bloqueados
+- Anuncios bloqueados
+- Rastreadores bloqueados
+- Mineros de crypto bloqueados
+- Intentos de fingerprinting bloqueados
+- Detecciones por IA
+- Popups bloqueados
+- Intentos de clickjacking
+- Anuncios en videos bloqueados
+
+### Visualización
+- Estadísticas por día (últimos 7 días)
+- Top 5 sitios con más bloqueos
+- Estadísticas por dominio
+- Contadores en tiempo real
+
+## Temas y Diseño
+
+### Variables CSS del Tema Oscuro
+```css
+--bg-primary: #1a1a1a
+--bg-secondary: #242424
+--bg-tertiary: #2a2a2a
+--text-primary: #f1f3f5
+--accent: #3b82f6
+```
+
+## Desarrollo
+
+### Servidor de Desarrollo
+El proyecto incluye un servidor Python simple para desarrollo:
+- Puerto: 5000
+- Cache desactivado para desarrollo
+- Sirve todos los archivos estáticos
+
+### Próximas Mejoras
+- [ ] Sincronización entre pestañas
+- [ ] Exportación/importación de configuración
+- [ ] Whitelist mejorada con patrones
+- [ ] Estadísticas históricas extendidas
+- [ ] Perfiles de bloqueo personalizados
+
+## Actualizaciones Recientes
+
+**Noviembre 10, 2025**
+- ✓ Implementado tema oscuro completo
+- ✓ Configuración por defecto optimizada (solo basic activo)
+- ✓ Añadido buscador de reglas con 266 reglas visibles
+- ✓ Categorización automática de reglas
+- ✓ Mejoras visuales y UX
+- ✓ Manejo robusto de errores para modo demo
+- ✓ Estadísticas con datos mock en demo
+
+## Autor
+Desarrollado con ❤️ usando Chrome Extension APIs y Vanilla JavaScript
+
+## Versión
+v5.0.0 - Minimalista Edition

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "AdBlock Pro - Protección Total",
+  "name": "AdBlock Pro",
   "version": "5.0.0",
-  "description": "Bloqueador avanzado con ML, CNAME cloaking detection, URL tracking removal, auto cookie banner dismiss, anti-adblock evasion, 270+ reglas, anti-fingerprinting, malware/crypto protection",
+  "description": "Bloqueador de anuncios efectivo con 266 reglas de bloqueo para anuncios, rastreadores y malware",
   "permissions": [
     "storage",
     "tabs",
@@ -37,35 +37,9 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": [
-        "url-cleaner.js", 
-        "cookie-banner-blocker.js",
-        "anti-adblock-evasion.js",
-        "social-widget-blocker.js",
-        "amp-unwrapper.js",
-        "ml-detector.js",
-        "video-stream-detector.js",
-        "anti-popup.js",
-        "content-script.js"
-      ],
+      "js": ["content-script.js"],
       "run_at": "document_start",
       "all_frames": true
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "injected-script.js",
-        "ml-detector.js",
-        "anti-fingerprint.js",
-        "video-stream-detector.js",
-        "url-cleaner.js",
-        "cookie-banner-blocker.js",
-        "anti-adblock-evasion.js",
-        "social-widget-blocker.js",
-        "amp-unwrapper.js"
-      ],
-      "matches": ["<all_urls>"]
     }
   ],
   "declarative_net_request": {

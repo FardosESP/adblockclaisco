@@ -36,12 +36,12 @@ class AdBlockProBackground {
     this.isEnabled = true;
     this.whitelist = new Set();
     this.settings = {
-      blockLevel: 'advanced',
-      enableML: true,
-      antiFingerprint: true,
-      showNotifications: true,
+      blockLevel: 'basic',
+      enableML: false,
+      antiFingerprint: false,
+      showNotifications: false,
       autoWhitelist: true,
-      sponsorBlock: true
+      sponsorBlock: false
     };
   }
 
@@ -73,12 +73,12 @@ class AdBlockProBackground {
     
     // Merge stored settings with defaults to preserve new features
     const defaultSettings = {
-      blockLevel: 'advanced',
-      enableML: true,
-      antiFingerprint: true,
-      showNotifications: true,
+      blockLevel: 'basic',
+      enableML: false,
+      antiFingerprint: false,
+      showNotifications: false,
       autoWhitelist: true,
-      sponsorBlock: true
+      sponsorBlock: false
     };
     this.settings = { ...defaultSettings, ...stored.settings };
     
