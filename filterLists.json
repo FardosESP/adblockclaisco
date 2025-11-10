@@ -1,0 +1,316 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": null,
+  "lists": [
+    {
+      "id": "default-ads",
+      "uuid": "DEFAULT-ADS",
+      "category": "ads",
+      "title": "Filtros de Anuncios Principales",
+      "desc": "Combina EasyList y uBlock Origin filters para bloqueo efectivo de anuncios",
+      "enabled": true,
+      "priority": 10,
+      "sources": [
+        {
+          "url": "https://ublockorigin.github.io/uAssets/thirdparties/easylist.txt",
+          "title": "EasyList",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt",
+          "title": "uBlock Origin Filters",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2024.txt",
+          "title": "uBlock Origin 2024 Filters",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2025.txt",
+          "title": "uBlock Origin 2025 Filters",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "default-privacy",
+      "uuid": "DEFAULT-PRIVACY",
+      "category": "privacy",
+      "title": "Filtros de Privacidad",
+      "desc": "Bloquea rastreadores y protege tu privacidad en línea",
+      "enabled": true,
+      "priority": 9,
+      "sources": [
+        {
+          "url": "https://ublockorigin.github.io/uAssets/thirdparties/easyprivacy.txt",
+          "title": "EasyPrivacy",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt",
+          "title": "uBlock Origin Privacy Filters",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "brave-unbreak",
+      "uuid": "BRAVE-UNBREAK",
+      "category": "unbreak",
+      "title": "Brave Unbreak",
+      "desc": "Excepciones para prevenir roturas en sitios web",
+      "enabled": true,
+      "priority": 11,
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/brave/adblock-lists/master/brave-unbreak.txt",
+          "title": "Brave Unbreak",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt",
+          "title": "uBlock Origin Unbreak",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "brave-specific",
+      "uuid": "BRAVE-SPECIFIC",
+      "category": "ads",
+      "title": "Brave Específico",
+      "desc": "Reglas específicas optimizadas por Brave",
+      "enabled": true,
+      "priority": 8,
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-specific.txt",
+          "title": "Brave Specific",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-social.txt",
+          "title": "Brave Social",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "youtube-filters",
+      "uuid": "YOUTUBE-FILTERS",
+      "category": "special",
+      "title": "YouTube AdBlock",
+      "desc": "Filtros especializados para bloquear anuncios en YouTube",
+      "enabled": true,
+      "priority": 10,
+      "requiresScriptlets": true,
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/quick-fixes.txt",
+          "title": "uBlock Origin Quick Fixes (YouTube)",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-android-specific.txt",
+          "title": "Brave Android Specific (YouTube Mobile)",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "twitch-filters",
+      "uuid": "TWITCH-FILTERS",
+      "category": "special",
+      "title": "Twitch AdBlock",
+      "desc": "Filtros especializados para bloquear anuncios en Twitch",
+      "enabled": true,
+      "priority": 10,
+      "requiresScriptlets": true,
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-twitch.txt",
+          "title": "Brave Twitch Adblock Rules",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "annoyances-cookies",
+      "uuid": "ANNOYANCES-COOKIES",
+      "category": "annoyances",
+      "title": "Bloqueo de Avisos de Cookies",
+      "desc": "Elimina molestos avisos de cookies y consentimiento",
+      "enabled": false,
+      "priority": 5,
+      "sources": [
+        {
+          "url": "https://secure.fanboy.co.nz/fanboy-cookiemonster_ubo.txt",
+          "title": "EasyList Cookie",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-cookies.txt",
+          "title": "uBlock Filters - Cookie Notices",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-cookie-specific.txt",
+          "title": "Brave Cookie Specific",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "annoyances-general",
+      "uuid": "ANNOYANCES-GENERAL",
+      "category": "annoyances",
+      "title": "Molestias Generales",
+      "desc": "Elimina elementos molestos como pop-ups, overlays, etc.",
+      "enabled": false,
+      "priority": 4,
+      "sources": [
+        {
+          "url": "https://secure.fanboy.co.nz/fanboy-annoyance_ubo.txt",
+          "title": "Fanboy's Annoyances",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-others.txt",
+          "title": "uBlock Annoyances List",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "regional-spanish",
+      "uuid": "REGIONAL-SPANISH",
+      "category": "regional",
+      "title": "EasyList Español",
+      "desc": "Filtros específicos para sitios en español",
+      "enabled": false,
+      "priority": 6,
+      "sources": [
+        {
+          "url": "https://easylist-downloads.adblockplus.org/easylistspanish.txt",
+          "title": "EasyList Spanish",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "security-malware",
+      "uuid": "SECURITY-MALWARE",
+      "category": "security",
+      "title": "Protección Contra Malware",
+      "desc": "Bloquea URLs maliciosas y sitios de riesgo",
+      "enabled": true,
+      "priority": 12,
+      "sources": [
+        {
+          "url": "https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt",
+          "title": "URLhaus Malicious URL Blocklist",
+          "format": "abp"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt",
+          "title": "uBlock Origin Badware Risks",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    },
+    {
+      "id": "security-miners",
+      "uuid": "SECURITY-MINERS",
+      "category": "security",
+      "title": "Anti Minería de Criptomonedas",
+      "desc": "Bloquea scripts de minería de criptomonedas",
+      "enabled": true,
+      "priority": 11,
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resource-abuse.txt",
+          "title": "uBlock Origin Resource Abuse",
+          "format": "abp"
+        }
+      ],
+      "ruleCount": 0,
+      "lastFetch": null,
+      "etag": null
+    }
+  ],
+  "categories": {
+    "ads": {
+      "title": "Anuncios",
+      "icon": "🛡️",
+      "desc": "Bloquea anuncios en sitios web",
+      "enabled": true
+    },
+    "privacy": {
+      "title": "Privacidad",
+      "icon": "👁️",
+      "desc": "Protege contra rastreadores",
+      "enabled": true
+    },
+    "special": {
+      "title": "YouTube & Twitch",
+      "icon": "🎬",
+      "desc": "Filtros especializados para streaming",
+      "enabled": true
+    },
+    "annoyances": {
+      "title": "Molestias",
+      "icon": "🚫",
+      "desc": "Elimina elementos molestos",
+      "enabled": false
+    },
+    "regional": {
+      "title": "Regional",
+      "icon": "🌍",
+      "desc": "Filtros específicos por idioma/región",
+      "enabled": false
+    },
+    "security": {
+      "title": "Seguridad",
+      "icon": "🔒",
+      "desc": "Protección contra malware y amenazas",
+      "enabled": true
+    },
+    "unbreak": {
+      "title": "Excepciones",
+      "icon": "✅",
+      "desc": "Previene roturas en sitios",
+      "enabled": true
+    }
+  }
+}

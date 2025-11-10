@@ -110,6 +110,13 @@ class PopupUI {
       })
     }
 
+    const staticRulesetToggle = document.getElementById("staticRulesetToggle")
+    if (staticRulesetToggle) {
+      staticRulesetToggle.addEventListener("change", (e) => {
+        this.toggleStaticRuleset(e.target.checked)
+      })
+    }
+
     const exportBtn = document.getElementById("exportBtn")
     if (exportBtn) {
       exportBtn.addEventListener("click", () => {
@@ -387,6 +394,9 @@ class PopupUI {
 
   async loadFilterLists() {
     try {
+      // Load static ruleset status first
+      await this.loadStaticRulesetStatus()
+
       const container = document.getElementById("filterListsContainer")
       if (!container) return
 

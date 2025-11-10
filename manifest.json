@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "AdBlock Pro",
-  "version": "5.0.0",
-  "description": "Bloqueador de anuncios efectivo con 266 reglas de bloqueo para anuncios, rastreadores y malware",
+  "version": "6.0.0",
+  "description": "Bloqueador de anuncios avanzado con listas de filtros estilo Brave Shield: EasyList, uBlock Origin, YouTube, Twitch y más",
   "permissions": [
     "storage",
     "tabs",
@@ -18,8 +18,15 @@
   ],
   "host_permissions": ["<all_urls>"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["filterLists.json"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "AdBlock Pro - Protección Total",
@@ -46,7 +53,7 @@
     "rule_resources": [
       {
         "id": "ruleset_main",
-        "enabled": true,
+        "enabled": false,
         "path": "rules.json"
       }
     ]

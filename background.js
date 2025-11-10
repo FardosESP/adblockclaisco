@@ -1,5 +1,421 @@
 // All modules are now inline - no imports needed
 
+// ============================================================================
+// ABP Parser - Converts Adblock Plus syntax to Chrome Declarative Net Request
+// ============================================================================
+class ABPParser {
+  constructor() {
+    this.ruleIdCounter = 1000;
+    this.scriptlets = [];
+    this.cosmeticRules = [];
+  }
+
+  parseFilterList(rawText, listId) {
+    const lines = rawText.split('\n');
+    const dnrRules = [];
+    const scriptlets = [];
+    const cosmeticRules = [];
+    let stats = {
+      total: 0,
+      networkRules: 0,
+      cosmeticRules: 0,
+      scriptlets: 0,
+      exceptions: 0,
+      comments: 0,
+      invalid: 0
+    };
+
+    for (let line of lines) {
+      line = line.trim();
+      
+      if (!line || line.startsWith('!') || line.startsWith('[')) {
+        stats.comments++;
+        continue;
+      }
+
+      stats.total++;
+
+      if (line.includes('#@#') || line.includes('##') || line.includes('#?#')) {
+        const cosmeticRule = this.parseCosmeticRule(line, listId);
+        if (cosmeticRule) {
+          cosmeticRules.push(cosmeticRule);
+          stats.cosmeticRules++;
+        }
+      }
+      else if (line.includes('##+js(') || line.includes('#+js(')) {
+        const scriptlet = this.parseScriptlet(line, listId);
+        if (scriptlet) {
+          scriptlets.push(scriptlet);
+          stats.scriptlets++;
+        }
+      }
+      else if (line.includes('@@')) {
+        const exceptionRule = this.parseExceptionRule(line, listId);
+        if (exceptionRule) {
+          dnrRules.push(exceptionRule);
+          stats.exceptions++;
+        }
+      }
+      else {
+        const networkRule = this.parseNetworkRule(line, listId);
+        if (networkRule) {
+          dnrRules.push(networkRule);
+          stats.networkRules++;
+        } else {
+          stats.invalid++;
+        }
+      }
+    }
+
+    return { dnrRules, scriptlets, cosmeticRules, stats };
+  }
+
+  parseNetworkRule(rule, listId) {
+    try {
+      let filter = rule;
+      let options = {};
+      
+      if (rule.includes('$')) {
+        const parts = rule.split('$');
+        filter = parts[0];
+        const optionsStr = parts.slice(1).join('$');
+        options = this.parseOptions(optionsStr);
+      }
+
+      if (filter.startsWith('||')) {
+        filter = filter.substring(2);
+      } else if (filter.startsWith('|')) {
+        filter = filter.substring(1);
+      }
+
+      if (filter.endsWith('^')) {
+        filter = filter.slice(0, -1);
+      }
+
+      if (filter.length < 3) {
+        return null;
+      }
+
+      const resourceTypes = options.types && options.types.length > 0
+        ? options.types
+        : ['script', 'image', 'xmlhttprequest', 'sub_frame'];
+
+      const dnrRule = {
+        id: this.ruleIdCounter++,
+        priority: options.important ? 100 : 1,
+        action: { type: 'block' },
+        condition: {
+          urlFilter: filter,
+          resourceTypes: resourceTypes
+        }
+      };
+
+      return dnrRule;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  parseExceptionRule(rule, listId) {
+    try {
+      let filter = rule.replace(/^@@/, '');
+      if (filter.startsWith('||')) {
+        filter = filter.substring(2);
+      }
+      if (filter.endsWith('^')) {
+        filter = filter.slice(0, -1);
+      }
+      if (filter.length < 3) {
+        return null;
+      }
+
+      return {
+        id: this.ruleIdCounter++,
+        priority: 2,
+        action: { type: 'allow' },
+        condition: {
+          urlFilter: filter,
+          resourceTypes: ['script', 'image', 'xmlhttprequest', 'sub_frame']
+        }
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  parseCosmeticRule(rule, listId) {
+    try {
+      let selector = '';
+      if (rule.includes('##')) {
+        selector = rule.split('##')[1];
+      } else if (rule.includes('#?#')) {
+        selector = rule.split('#?#')[1];
+      }
+      if (!selector) return null;
+      return {
+        id: `cosmetic_${this.ruleIdCounter++}`,
+        listId,
+        selector
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  parseScriptlet(rule, listId) {
+    try {
+      const match = rule.match(/#\+js\(([^)]+)\)/);
+      if (!match) return null;
+      return {
+        id: `scriptlet_${this.ruleIdCounter++}`,
+        listId,
+        scriptletName: match[1]
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  parseOptions(optionsStr) {
+    const options = { types: [], important: false };
+    const optionsList = optionsStr.split(',').map(o => o.trim());
+
+    for (const option of optionsList) {
+      if (option === 'important') {
+        options.important = true;
+      } else if (this.isValidResourceType(option)) {
+        options.types.push(this.mapResourceType(option));
+      }
+    }
+    return options;
+  }
+
+  isValidResourceType(type) {
+    const validTypes = ['script', 'image', 'stylesheet', 'xmlhttprequest', 'subdocument', 'font', 'media'];
+    return validTypes.includes(type);
+  }
+
+  mapResourceType(abpType) {
+    const typeMap = {
+      'subdocument': 'sub_frame',
+      'xmlhttprequest': 'xmlhttprequest'
+    };
+    return typeMap[abpType] || abpType;
+  }
+
+  resetCounter(startId = 1000) {
+    this.ruleIdCounter = startId;
+  }
+}
+
+// ============================================================================
+// Filter List Manager - Manages filter lists, fetching, caching, and updates
+// ============================================================================
+class FilterListManager {
+  constructor() {
+    this.lists = [];
+    this.categories = {};
+    this.parser = new ABPParser();
+    this.maxDynamicRules = 30000;
+    this.compiledRules = new Map();
+    this.cosmeticRulesCache = new Map();
+    this.scriptletsCache = new Map();
+  }
+
+  async initialize() {
+    console.log('[FilterListManager] Inicializando sistema de listas...');
+    
+    try {
+      const response = await fetch(chrome.runtime.getURL('filterLists.json'));
+      const filterData = await response.json();
+      
+      this.lists = filterData.lists;
+      this.categories = filterData.categories;
+
+      await this.loadCachedData();
+      
+      console.log(`[FilterListManager] ${this.lists.length} listas configuradas`);
+      console.log(`[FilterListManager] ${this.getEnabledLists().length} listas activadas`);
+    } catch (error) {
+      console.error('[FilterListManager] Error durante inicialización:', error);
+    }
+  }
+
+  async loadCachedData() {
+    try {
+      const stored = await chrome.storage.local.get(['filterListsCache', 'compiledRulesCache']);
+      
+      if (stored.filterListsCache) {
+        const cache = stored.filterListsCache;
+        for (const list of this.lists) {
+          if (cache[list.id]) {
+            list.ruleCount = cache[list.id].ruleCount || 0;
+            list.lastFetch = cache[list.id].lastFetch;
+            list.etag = cache[list.id].etag;
+            list.enabled = cache[list.id].enabled !== undefined ? cache[list.id].enabled : list.enabled;
+          }
+        }
+      }
+
+      if (stored.compiledRulesCache) {
+        this.compiledRules = new Map(Object.entries(stored.compiledRulesCache));
+      }
+    } catch (error) {
+      console.error('[FilterListManager] Error cargando caché:', error);
+    }
+  }
+
+  async saveCachedData() {
+    try {
+      const cache = {};
+      for (const list of this.lists) {
+        cache[list.id] = {
+          ruleCount: list.ruleCount,
+          lastFetch: list.lastFetch,
+          etag: list.etag,
+          enabled: list.enabled
+        };
+      }
+
+      const compiledRulesObj = Object.fromEntries(this.compiledRules);
+
+      await chrome.storage.local.set({
+        filterListsCache: cache,
+        compiledRulesCache: compiledRulesObj
+      });
+    } catch (error) {
+      console.error('[FilterListManager] Error guardando caché:', error);
+    }
+  }
+
+  async refreshAllLists(force = false) {
+    console.log('[FilterListManager] Actualizando listas de filtros...');
+    const enabledLists = this.getEnabledLists();
+    
+    const promises = enabledLists.map(list => this.refreshList(list.id, force));
+    await Promise.allSettled(promises);
+
+    await this.applyDynamicRules();
+    await this.saveCachedData();
+  }
+
+  async refreshList(listId, force = false) {
+    const list = this.lists.find(l => l.id === listId);
+    if (!list) return;
+
+    console.log(`[FilterListManager] Actualizando: ${list.title}`);
+
+    try {
+      const allRules = [];
+
+      for (const source of list.sources) {
+        try {
+          const response = await fetch(source.url);
+          if (!response.ok) continue;
+
+          const rawText = await response.text();
+          const parsed = this.parser.parseFilterList(rawText, list.id);
+          
+          allRules.push(...parsed.dnrRules);
+
+        } catch (sourceError) {
+          console.error(`[FilterListManager] Error: ${source.title}`, sourceError);
+        }
+      }
+
+      this.compiledRules.set(listId, allRules);
+      list.ruleCount = allRules.length;
+      list.lastFetch = Date.now();
+
+      console.log(`[FilterListManager] ${list.title}: ${allRules.length} reglas`);
+
+    } catch (error) {
+      console.error(`[FilterListManager] Error: ${list.title}`, error);
+    }
+  }
+
+  async applyDynamicRules() {
+    console.log('[FilterListManager] Aplicando reglas dinámicas...');
+
+    try {
+      const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+      const removeRuleIds = existingRules.map(r => r.id);
+
+      const enabledLists = this.getEnabledLists();
+      const allRules = [];
+
+      for (const list of enabledLists) {
+        const rules = this.compiledRules.get(list.id) || [];
+        allRules.push(...rules);
+      }
+
+      const prioritizedRules = this.prioritizeRules(allRules, this.maxDynamicRules);
+
+      console.log(`[FilterListManager] Aplicando ${prioritizedRules.length} reglas`);
+
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds,
+        addRules: prioritizedRules
+      });
+
+      console.log('[FilterListManager] Reglas aplicadas exitosamente');
+    } catch (error) {
+      console.error('[FilterListManager] Error aplicando reglas:', error);
+    }
+  }
+
+  prioritizeRules(rules, maxRules) {
+    const prioritized = [...rules].sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      return a.id - b.id;
+    });
+    return prioritized.slice(0, maxRules);
+  }
+
+  async toggleList(listId, enabled) {
+    const list = this.lists.find(l => l.id === listId);
+    if (!list) return false;
+
+    list.enabled = enabled;
+    await this.applyDynamicRules();
+    await this.saveCachedData();
+    return true;
+  }
+
+  getEnabledLists() {
+    return this.lists.filter(l => l.enabled);
+  }
+
+  getStatus() {
+    const totalRules = this.getEnabledLists().reduce((sum, list) => sum + (list.ruleCount || 0), 0);
+    
+    return {
+      lists: this.lists.map(list => ({
+        id: list.id,
+        title: list.title,
+        category: list.category,
+        enabled: list.enabled,
+        ruleCount: list.ruleCount || 0,
+        lastFetch: list.lastFetch,
+        priority: list.priority
+      })),
+      categories: this.categories,
+      summary: {
+        totalLists: this.lists.length,
+        enabledLists: this.getEnabledLists().length,
+        totalRules: totalRules,
+        maxRules: this.maxDynamicRules,
+        utilizationPercent: Math.round((totalRules / this.maxDynamicRules) * 100)
+      }
+    };
+  }
+}
+
+// ============================================================================
+// AdBlock Pro Background - Main extension logic
+// ============================================================================
 class AdBlockProBackground {
   constructor() {
     this.stats = {
@@ -41,19 +457,28 @@ class AdBlockProBackground {
       antiFingerprint: false,
       showNotifications: false,
       autoWhitelist: true,
-      sponsorBlock: false
+      sponsorBlock: false,
+      staticRulesEnabled: false
     };
+
+    // Filter List Manager - Sistema de listas estilo Brave Shield
+    this.filterListManager = new FilterListManager();
   }
 
   async initialize() {
-    console.log('[AdBlock Pro] Inicializando v5.0.0...');
+    console.log('[AdBlock Pro] Inicializando v6.0.0 - Sistema de listas Brave Shield...');
 
     await this.loadSettings();
+    
+    // Initialize Filter List Manager
+    await this.filterListManager.initialize();
+    
     this.setupListeners();
     this.setupAlarms();
     await this.updateBadge();
     
     console.log('[AdBlock Pro] Inicialización completa - Protección avanzada activa');
+    console.log('[AdBlock Pro] Listas de filtros cargadas:', this.filterListManager.getEnabledLists().length);
   }
 
   async loadSettings() {
@@ -78,12 +503,16 @@ class AdBlockProBackground {
       antiFingerprint: false,
       showNotifications: false,
       autoWhitelist: true,
-      sponsorBlock: false
+      sponsorBlock: false,
+      staticRulesEnabled: false
     };
     this.settings = { ...defaultSettings, ...stored.settings };
     
     // Load site-specific rules
     this.siteRules = stored.siteRules || {};
+
+    // Apply static ruleset state on startup
+    await this.applyStaticRulesetState();
   }
 
   async saveStats() {
@@ -294,11 +723,40 @@ class AdBlockProBackground {
           break;
 
         case 'UPDATE_FILTER_LISTS':
-          sendResponse({ success: true, rulesCount: 240 });
+          await this.filterListManager.refreshAllLists(true);
+          const status = this.filterListManager.getStatus();
+          sendResponse({ success: true, rulesCount: status.summary.totalRules });
           break;
 
         case 'TOGGLE_FILTER_LIST':
-          sendResponse({ success: true });
+          const toggleResult = await this.filterListManager.toggleList(request.listId, request.enabled);
+          sendResponse({ success: toggleResult });
+          break;
+
+        case 'GET_FILTER_LISTS':
+          sendResponse(this.filterListManager.getStatus());
+          break;
+
+        case 'REFRESH_FILTER_LISTS':
+          this.filterListManager.refreshAllLists(false).then(() => {
+            console.log('[Background] Listas actualizadas');
+          });
+          sendResponse({ success: true, message: 'Actualización iniciada' });
+          break;
+
+        case 'TOGGLE_STATIC_RULESET':
+          const staticToggleResult = await this.toggleStaticRuleset(request.enabled);
+          sendResponse({ 
+            success: staticToggleResult, 
+            enabled: this.settings.staticRulesEnabled 
+          });
+          break;
+
+        case 'GET_STATIC_RULESET_STATUS':
+          sendResponse({ 
+            enabled: this.settings.staticRulesEnabled,
+            ruleCount: 240
+          });
           break;
 
         case 'EXPORT_DATA':
@@ -553,6 +1011,34 @@ class AdBlockProBackground {
       });
     }
     return this.tabStats.get(tabId);
+  }
+
+  async applyStaticRulesetState() {
+    try {
+      const rulesetIds = ['ruleset_main'];
+      
+      if (this.settings.staticRulesEnabled) {
+        await chrome.declarativeNetRequest.updateEnabledRulesets({
+          enableRulesetIds: rulesetIds
+        });
+        console.log('[AdBlock Pro] Ruleset estático activado (240 reglas)');
+      } else {
+        await chrome.declarativeNetRequest.updateEnabledRulesets({
+          disableRulesetIds: rulesetIds
+        });
+        console.log('[AdBlock Pro] Ruleset estático desactivado');
+      }
+    } catch (error) {
+      console.error('[AdBlock Pro] Error aplicando estado del ruleset estático:', error);
+    }
+  }
+
+  async toggleStaticRuleset(enabled) {
+    this.settings.staticRulesEnabled = enabled;
+    await chrome.storage.local.set({ settings: this.settings });
+    await this.applyStaticRulesetState();
+    console.log(`[AdBlock Pro] Ruleset estático ${enabled ? 'activado' : 'desactivado'}`);
+    return true;
   }
 
   async updateBadge(tabId) {

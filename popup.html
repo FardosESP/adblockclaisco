@@ -608,8 +608,8 @@
 
     .btn-group .btn {
       flex: 1;
-      padding: 14px 12px;
-      font-size: 11px;
+      padding: 12px 16px; // Increased padding from 10px 12px for better text spacing in buttons
+      font-size: 12px; // Increased font size from 11px to 12px for better readability
       text-align: center;
       display: flex;
       align-items: center;
@@ -1072,6 +1072,63 @@
       border-color: var(--border-hover);
       background: var(--bg-secondary);
     }
+
+    /* Reduced toggle switch size from 58x32 to 48x26 for staticRulesetToggle */
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      display: inline-block;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-tertiary);
+      border: 1.5px solid var(--border);
+      transition: var(--transition);
+      border-radius: var(--radius-full);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .toggle .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 2px;
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      transition: var(--transition);
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    .toggle input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+      background: linear-gradient(135deg, #ffffff, #f3f4f6);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 8px rgba(255,255,255,0.5);
+    }
+
+    .toggle input:focus + .toggle-slider {
+      box-shadow: 0 0 0 4px var(--accent-light);
+    }
   </style>
 </head>
 <body>
@@ -1198,7 +1255,28 @@
 
     <div id="lists" class="tab-content">
       <div class="section">
-        <div class="section-title">Listas de Filtros Activas</div>
+        <div class="section-title">Ruleset Estático (240 Reglas Básicas)</div>
+        <div class="info-card" style="margin-bottom: 16px;">
+          <div class="stat-row">
+            <span class="stat-row-label">
+              <span style="font-weight: 500;">Reglas Estáticas Básicas</span><br>
+              <span style="font-size: 11px; color: var(--text-tertiary);">240 reglas hardcodeadas para protección básica inmediata</span>
+            </span>
+            <label class="toggle">
+              <input type="checkbox" id="staticRulesetToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div style="margin-top: 8px; padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); border-left: 3px solid var(--info);">
+            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+              ℹ️ <strong style="color: var(--text-primary);">Recomendación:</strong> Desactivado por defecto. Las listas dinámicas de Brave Shield son más completas y actualizadas. Activa esto solo si necesitas protección básica garantizada cuando las listas dinámicas fallen.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Listas de Filtros Dinámicas (Brave Shield)</div>
         <div id="filterListsContainer"></div>
         <div id="updateStatus" class="status-message"></div>
         <div class="btn-group">
