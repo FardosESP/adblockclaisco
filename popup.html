@@ -72,7 +72,7 @@
 
     body {
       width: 420px;
-      min-height: 640px;
+      height: 720px; // Increased from 640px to 720px for more vertical space
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg-app);
       color: var(--text-primary);
@@ -86,8 +86,8 @@
     .container {
       display: flex;
       flex-direction: column;
-      min-height: 640px;
       background: var(--bg-primary);
+      height: 720px; // Increased from 640px to 720px to match body height
     }
 
     /* Premium header with glassmorphism effect */
@@ -324,6 +324,7 @@
     }
 
     /* Sleek tab navigation */
+    /* Adjusted tab button sizing to ensure all tabs are visible */
     .tabs {
       display: flex;
       background: var(--bg-secondary);
@@ -331,22 +332,31 @@
       padding: 0;
       gap: 0;
       overflow-x: auto;
-      scrollbar-width: none;
+      scrollbar-width: thin;
       position: relative;
     }
 
     .tabs::-webkit-scrollbar {
-      display: none;
+      height: 4px;
+    }
+
+    .tabs::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+    }
+
+    .tabs::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: var(--radius-full);
     }
 
     .tab-btn {
-      flex: 1;
+      flex-shrink: 0;
       min-width: fit-content;
-      padding: 16px 14px;
+      padding: 14px 12px;
       background: transparent;
       border: none;
       color: var(--text-tertiary);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
       transition: var(--transition);
@@ -592,12 +602,19 @@
 
     .btn-group {
       display: flex;
-      gap: 12px;
+      gap: 16px;
       margin-top: 18px;
     }
 
     .btn-group .btn {
       flex: 1;
+      padding: 14px 12px;
+      font-size: 11px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
     }
 
     /* Feature toggle with improved design */
